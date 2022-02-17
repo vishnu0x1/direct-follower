@@ -1,5 +1,6 @@
 package models
 
-import java.time.ZonedDateTime
+import Types._
 
-case class Event(traceId: String, activity: String, start: ZonedDateTime)
+/** Represents an activity logged in a process */
+case class Event(traceId: TraceId, activity: Activity, start: DateTime)

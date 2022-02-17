@@ -1,6 +1,9 @@
 package mining
 
-import java.io.File
+import models._
+
+import java.time.ZonedDateTime
+import scala.io.Source
 
 /**
  * Extracts the direct follower matrix from a log.
@@ -9,12 +12,27 @@ import java.io.File
  */
 object DirectFollowerExtraction extends App {
   // Get the log file from the resources
-  val logFile = new File(getClass.getResource("/IncidentExample.csv").getPath())
+  private val logFile =
+    Source.fromURL(getClass.getResource("/IncidentExample.csv"))
 
-  println(s"Please use the events in the log-file located at ${logFile.getAbsolutePath()} to build a direct" +
-    s" follower matrix.")
+  // parse events from the log file
+  val events = logFile.getLines()
+    .toSeq.tail
+    .map(CsvParser.parseEvent)
 
-  /////////////////////////////
-  /// YOUR WORK STARTS HERE ///
-  /////////////////////////////
+  // create the traces from the events
+  val traces = events.groupBy(_.traceId)
+    .map((Trace.apply _).tupled)
+    .toSeq
+
+  // create the direct followers from the traces
+  val directFollowers = DirectFollowerMatrix(traces)
+  directFollowers.prettyPrint()
+
+  // filter the direct followers
+  val start = ZonedDateTime.parse("2016-01-04T12:00:00Z")
+  val end = ZonedDateTime.parse("2016-01-06T07:00:00Z")
+  directFollowers.filter(start, end).prettyPrint()
 }
+
+
